@@ -75,7 +75,7 @@ const App = () => {
         color: entry.color
       })),
     []
-  )
+  ) 
 
   useEffect(() => {
     if (colorScheme !== 'system') {
