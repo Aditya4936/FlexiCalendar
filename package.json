@@ -19,10 +19,10 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/flexi-calendar.git"
+    "url": "https://github.com/Aditya4936/FlexiCalendar.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/flexi-calendar/issues"
+    "url": "https://github.com/Aditya4936/FlexiCalendar.git/issues"
   },
   "homepage": "https://github.com/your-username/flexi-calendar#readme",
   "author": "FlexiCalendar Contributors",
