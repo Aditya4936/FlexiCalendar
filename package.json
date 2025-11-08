@@ -13,6 +13,7 @@
     },
     "./style.css": "./dist/flexi-calendar.css"
   },
+  "style": "./dist/flexi-calendar.css",
   "files": [
     "dist",
     "src"

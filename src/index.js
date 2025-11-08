@@ -1,3 +1,4 @@
+import './App.css'
 export { FlexiCalendar } from './components/FlexiCalendar/FlexiCalendar.jsx'
 export { useCalendar } from './hooks/useCalendar.js'
 export { defaultTheme } from './theme/defaultTheme.js'
