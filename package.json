@@ -10,13 +10,17 @@
     ".": {
       "import": "./dist/flexi-calendar.mjs",
       "require": "./dist/flexi-calendar.cjs"
-    }
+    },
+    "./style.css": "./dist/flexi-calendar.css"
   },
   "files": [
     "dist",
     "src"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/*.css",
+    "./src/**/*.css"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Aditya4936/FlexiCalendar.git"
