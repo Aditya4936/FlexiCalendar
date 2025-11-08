@@ -12,6 +12,23 @@ import {
 } from '../../utils/dateUtils.js'
 import '../../styles/flexiCalendar.css'
 
+const dateFromKey = (key) => {
+  if (!key) {
+    return null
+  }
+  const segments = key.split('-').map(Number)
+  if (segments.length !== 3) {
+    return null
+  }
+  const [year, month, day] = segments
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null
+  }
+  const parsed = new Date(year, month - 1, day)
+  parsed.setHours(0, 0, 0, 0)
+  return parsed
+}
+
 const buildClassName = (base, tokens = {}) => {
   const extra = Object.entries(tokens)
     .filter(([, value]) => Boolean(value))
@@ -124,6 +141,12 @@ export const FlexiCalendar = ({
   const controlledSelected = normalizeDate(selectedDate)
   const effectiveSelectedDate = controlledSelected || internalSelected
   const effectiveSelectedKey = effectiveSelectedDate ? dateKey(effectiveSelectedDate) : null
+  const effectiveSelectedStable = useMemo(() => {
+    if (!effectiveSelectedDate) {
+      return null
+    }
+    return normalizeDate(effectiveSelectedDate)
+  }, [effectiveSelectedKey, effectiveSelectedDate])
 
   const dayRefs = useRef(new Map())
 
@@ -172,6 +195,7 @@ export const FlexiCalendar = ({
 
   const focusKey = focusDate ? dateKey(focusDate) : null
   const activeMonthKey = dateKey(activeMonthDate)
+  const activeMonthStable = useMemo(() => (activeMonthDate ? new Date(activeMonthDate.getTime()) : null), [activeMonthKey, activeMonthDate])
 
   const lightThemeTokens = useMemo(() => ({ ...defaultTheme, ...(theme || {}) }), [theme])
   const darkThemeTokens = useMemo(
@@ -206,38 +230,47 @@ export const FlexiCalendar = ({
   )
 
   useEffect(() => {
-    if (!effectiveSelectedDate) {
+    if (!effectiveSelectedStable) {
       return
     }
     setFocusDate((current) => {
-      if (current && isSameDay(current, effectiveSelectedDate)) {
+      if (current && isSameDay(current, effectiveSelectedStable)) {
         return current
       }
-      const next = findFocusableDate(effectiveSelectedDate)
-      if (current && next && isSameDay(current, next)) {
-        return current
+      const next = findFocusableDate(effectiveSelectedStable)
+      if (next) {
+        if (current && isSameDay(current, next)) {
+          return current
+        }
+        return next
       }
-      return next || current || effectiveSelectedDate
+      return current || effectiveSelectedStable
     })
-  }, [effectiveSelectedKey, effectiveSelectedDate, findFocusableDate])
+  }, [effectiveSelectedKey, effectiveSelectedStable, findFocusableDate])
 
   useEffect(() => {
     setFocusDate((current) => {
-      if (current && current.getFullYear() === activeMonthDate.getFullYear() && current.getMonth() === activeMonthDate.getMonth()) {
+      if (!activeMonthStable) {
         return current
       }
-      const baseline = effectiveSelectedDate &&
-        effectiveSelectedDate.getFullYear() === activeMonthDate.getFullYear() &&
-        effectiveSelectedDate.getMonth() === activeMonthDate.getMonth()
-        ? effectiveSelectedDate
-        : activeMonthDate
+      if (current && current.getFullYear() === activeMonthStable.getFullYear() && current.getMonth() === activeMonthStable.getMonth()) {
+        return current
+      }
+      const baseline = effectiveSelectedStable &&
+        effectiveSelectedStable.getFullYear() === activeMonthStable.getFullYear() &&
+        effectiveSelectedStable.getMonth() === activeMonthStable.getMonth()
+        ? effectiveSelectedStable
+        : activeMonthStable
       const next = findFocusableDate(baseline)
       if (current && next && isSameDay(current, next)) {
         return current
       }
-      return next || current
+      if (!next) {
+        return current || baseline
+      }
+      return next
     })
-  }, [activeMonthKey, activeMonthDate, effectiveSelectedDate, findFocusableDate])
+  }, [activeMonthKey, activeMonthStable, effectiveSelectedStable, findFocusableDate])
 
   useEffect(() => {
     if (!focusKey) {
@@ -480,7 +513,6 @@ export const FlexiCalendar = ({
     const buttonProps = {
       type: 'button',
       className: composedClassName,
-      key,
       onClick: handleClick,
       onKeyDown: handleKeyDown,
       onFocus: () => {
@@ -508,6 +540,7 @@ export const FlexiCalendar = ({
 
     return (
       <button
+        key={key}
         {...buttonProps}
         ref={(node) => {
           if (node) {
